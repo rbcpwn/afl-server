@@ -19,11 +19,10 @@ class SocketClient {
       }
 
       const defaultOptions = {
-        transports: ['websocket', 'polling'],
+        transports: ['polling'],  // 优先使用 polling 避免版本不匹配
         reconnection: true,
         reconnectionDelay: this.reconnectDelay,
-        reconnectionAttempts: this.maxReconnectAttempts,
-        path: '/socket.io/'
+        reconnectionAttempts: this.maxReconnectAttempts
       }
 
       this.socket = io(url, { ...defaultOptions, ...options })
