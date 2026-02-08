@@ -15,6 +15,7 @@ from models import (
     TaskCreateResponse,
     Task,
     TaskType,
+    TaskStatus,
     InputType
 )
 from services import task_manager, compilation_service, seed_service
@@ -179,14 +180,14 @@ class BlackboxUpload(Resource):
             temp_dir = os.path.join(settings.upload_dir, f"temp_{datetime.now().timestamp()}")
             filepath = save_upload_file(file, temp_dir)
 
+            # 设置可执行权限
+            os.chmod(filepath, 0o755)
+
             # 验证 ELF 文件
             import asyncio
             success, error_msg = asyncio.run(compilation_service.validate_binary(filepath))
             if not success:
                 return {"error": f"ELF 文件验证失败: {error_msg}"}, 400
-
-            # 设置可执行权限
-            os.chmod(filepath, 0o755)
 
             # 创建任务
             input_type = InputType(input_type_str) if input_type_str else InputType.STDIN
