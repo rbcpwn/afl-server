@@ -73,10 +73,11 @@ show_menu() {
     echo "  1) 启动后端 + 前端 (推荐)"
     echo "  2) 仅启动后端"
     echo "  3) 仅启动前端"
-    echo "  4) 停止所有服务"
-    echo "  5) 退出"
+    echo "  4) 检查 AFL 环境"
+    echo "  5) 停止所有服务"
+    echo "  6) 退出"
     echo ""
-    read -p "请选择操作 [1-5]: " choice
+    read -p "请选择操作 [1-6]: " choice
 
     case $choice in
         1)
@@ -89,10 +90,14 @@ show_menu() {
             start_frontend
             ;;
         4)
-            stop_services
+            check_afl_environment
             show_menu
             ;;
         5)
+            stop_services
+            show_menu
+            ;;
+        6)
             echo "退出"
             exit 0
             ;;
@@ -101,6 +106,80 @@ show_menu() {
             show_menu
             ;;
     esac
+}
+
+# 检查 AFL 环境
+check_afl_environment() {
+    echo ""
+    echo "=================================="
+    echo "  检查 AFL 环境"
+    echo "=================================="
+    echo ""
+
+    # 检查 AFL 是否已安装
+    if command -v afl-fuzz > /dev/null 2>&1; then
+        echo -e "${GREEN}AFL 已安装: $(afl-fuzz 2>&1 | head -1)${NC}"
+        return 0
+    fi
+
+    # 检查 AFL-master 目录
+    if [ -d "/workspace/AFL-master" ]; then
+        echo -e "${YELLOW}发现 AFL-master 目录${NC}"
+        read -p "是否编译并安装 AFL? [y/N]: " install_afl
+        if [ "$install_afl" = "y" ] || [ "$install_afl" = "Y" ]; then
+            bash "${PROJECT_ROOT}/afl-setup.sh"
+            return $?
+        else
+            return 1
+        fi
+    fi
+
+    # 检查 AFL-master.zip
+    if [ -f "/workspace/AFL-master.zip" ]; then
+        echo -e "${YELLOW}发现 AFL-master.zip${NC}"
+        read -p "是否解压并编译 AFL? [y/N]: " install_afl
+        if [ "$install_afl" = "y" ] || [ "$install_afl" = "Y" ]; then
+            cd /tmp
+            unzip -q /workspace/AFL-master.zip
+            bash "${PROJECT_ROOT}/afl-setup.sh"
+            return $?
+        else
+            return 1
+        fi
+    fi
+
+    # AFL 不存在，询问是否下载
+    echo -e "${RED}AFL 未安装${NC}"
+    read -p "是否从 GitHub 自动下载 AFL? [y/N]: " download_afl
+    if [ "$download_afl" = "y" ] || [ "$download_afl" = "Y" ]; then
+        echo -e "${BLUE}正在下载 AFL...${NC}"
+        cd /tmp
+        if command -v git > /dev/null 2>&1; then
+            git clone https://github.com/google/AFL.git
+        elif command -v wget > /dev/null 2>&1; then
+            wget -q https://github.com/google/AFL/archive/refs/heads/master.zip -O AFL.zip
+            unzip -q AFL.zip
+            mv AFL-master AFL
+        elif command -v curl > /dev/null 2>&1; then
+            curl -sL https://github.com/google/AFL/archive/refs/heads/master.zip -o AFL.zip
+            unzip -q AFL.zip
+            mv AFL-master AFL
+        else
+            echo -e "${RED}错误: 未找到 git、wget 或 curl${NC}"
+            return 1
+        fi
+
+        if [ -d "/tmp/AFL" ]; then
+            bash "${PROJECT_ROOT}/afl-setup.sh"
+            return $?
+        else
+            echo -e "${RED}AFL 下载失败${NC}"
+            return 1
+        fi
+    else
+        echo -e "${YELLOW}AFL 未安装，无法启动 fuzz 功能${NC}"
+        return 1
+    fi
 }
 
 # 检查环境
@@ -117,6 +196,12 @@ check_environment() {
         echo -e "${RED}错误: 前端依赖未安装${NC}"
         echo "请先运行: bash ${PROJECT_ROOT}/setup.sh"
         exit 1
+    fi
+
+    # 检查 AFL 环境
+    check_afl_environment
+    if [ $? -ne 0 ]; then
+        echo -e "${YELLOW}警告: AFL 环境检查失败，fuzz 功能可能不可用${NC}"
     fi
 }
 
@@ -270,6 +355,9 @@ main() {
             frontend)
                 start_frontend
                 ;;
+            check-afl)
+                check_afl_environment
+                ;;
             stop)
                 stop_services
                 ;;
@@ -277,12 +365,13 @@ main() {
                 show_status
                 ;;
             *)
-                echo "用法: $0 [all|backend|frontend|stop|status]"
+                echo "用法: $0 [all|backend|frontend|check-afl|stop|status]"
                 echo ""
                 echo "选项:"
                 echo "  all       - 启动后端和前端"
                 echo "  backend   - 仅启动后端"
                 echo "  frontend  - 仅启动前端"
+                echo "  check-afl - 检查 AFL 环境"
                 echo "  stop      - 停止所有服务"
                 echo "  status    - 查看服务状态"
                 echo ""
