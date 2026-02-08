@@ -3,6 +3,9 @@ import os
 import sys
 import argparse
 
+# 添加 backend 目录到 Python 路径
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'backend'))
+sys.path.insert(0, os.path.dirname(__file__))
 
 def main():
     """主入口函数"""

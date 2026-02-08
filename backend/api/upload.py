@@ -61,7 +61,7 @@ class WhiteboxUpload(Resource):
                 return {"error": "没有上传文件"}, 400
 
             files = request.files.getlist("files")
-            if not files or all(f.filename == "" for f in files):
+            if not files or len(files) == 0:
                 return {"error": "没有选择文件"}, 400
 
             # 获取表单数据
@@ -238,7 +238,7 @@ class SeedsUpload(Resource):
                 return {"error": "没有上传文件"}, 400
 
             files = request.files.getlist("files")
-            if not files or all(f.filename == "" for f in files):
+            if not files or len(files) == 0:
                 return {"error": "没有选择文件"}, 400
 
             # 获取任务ID（可选）
