@@ -47,7 +47,7 @@ class TaskList(Resource):
             return TaskListResponse(
                 tasks=filtered_tasks,
                 total=len(filtered_tasks)
-            ).model_dump(), 200
+            ).model_dump(mode='json'), 200
 
         except Exception as e:
             current_app.logger.error(f"获取任务列表失败: {e}")
@@ -65,7 +65,7 @@ class TaskDetail(Resource):
             if not task:
                 return {"error": "任务不存在"}, 404
 
-            return task.model_dump(), 200
+            return task.model_dump(mode='json'), 200
 
         except Exception as e:
             current_app.logger.error(f"获取任务详情失败: {e}")
@@ -190,7 +190,7 @@ class TaskStats(Resource):
                 coverage=stats.get("coverage", task.coverage),
                 run_time=stats.get("run_time", "00:00:00"),
                 last_update=datetime.now()
-            ).model_dump(), 200
+            ).model_dump(mode='json'), 200
 
         except Exception as e:
             current_app.logger.error(f"获取任务统计失败: {e}")

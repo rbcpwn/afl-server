@@ -25,6 +25,12 @@ class TaskManager:
             cls._instance = super().__new__(cls)
         return cls._instance
 
+    def __init__(self):
+        """初始化任务管理器"""
+        if not hasattr(self, '_initialized'):
+            self._load_tasks()
+            self._initialized = True
+
     @classmethod
     def get_instance(cls) -> 'TaskManager':
         return cls()
@@ -84,6 +90,7 @@ class TaskManager:
         )
 
         self._tasks[task_id] = task
+        self._save_task(task)
         return task
 
     def get_task(self, task_id: int) -> Optional[Task]:
@@ -107,6 +114,37 @@ class TaskManager:
                 task.started_at = datetime.now()
             elif status in [TaskStatus.COMPLETED, TaskStatus.FAILED, TaskStatus.STOPPED]:
                 task.completed_at = datetime.now()
+
+        self._save_task(task)
+
+    def _save_task(self, task: Task):
+        """保存任务到文件"""
+        task_file = os.path.join(settings.tasks_dir, f"task_{task.id}", "task.json")
+        try:
+            with open(task_file, 'w') as f:
+                json.dump(task.model_dump(mode='json'), f, indent=2)
+        except Exception as e:
+            print(f"保存任务失败: {e}")
+
+    def _load_tasks(self):
+        """从文件加载所有任务"""
+        self._tasks = {}
+        self._task_id_counter = 0
+        try:
+            for task_dir in os.listdir(settings.tasks_dir):
+                if not task_dir.startswith("task_"):
+                    continue
+                task_file = os.path.join(settings.tasks_dir, task_dir, "task.json")
+                if not os.path.exists(task_file):
+                    continue
+                with open(task_file, 'r') as f:
+                    task_data = json.load(f)
+                    task = Task(**task_data)
+                    self._tasks[task.id] = task
+                    if task.id > self._task_id_counter:
+                        self._task_id_counter = task.id
+        except Exception as e:
+            print(f"加载任务失败: {e}")
 
     def update_task_stats(
         self,
