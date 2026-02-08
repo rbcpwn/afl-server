@@ -57,15 +57,15 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="execCount" label="执行次数" width="120">
+        <el-table-column prop="exec_count" label="执行次数" width="120">
           <template #default="{ row }">
-            {{ formatNumber(row.execCount) }}
+            {{ formatNumber(row.exec_count) }}
           </template>
         </el-table-column>
-        <el-table-column prop="crashCount" label="崩溃数" width="80">
+        <el-table-column prop="unique_crashes" label="崩溃数" width="80">
           <template #default="{ row }">
-            <span :class="{ 'crash-count': row.crashCount > 0 }">
-              {{ row.crashCount }}
+            <span :class="{ 'crash-count': row.unique_crashes > 0 }">
+              {{ row.unique_crashes }}
             </span>
           </template>
         </el-table-column>

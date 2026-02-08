@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     max_tasks: int = 10
 
     # CORS
-    cors_origins: list = ["http://localhost:5173", "http://127.0.0.1:5173"]
+    cors_origins: list = ["http://localhost:5173", "http://127.0.0.1:5173", "*"]
 
     class Config:
         env_file = ".env"
