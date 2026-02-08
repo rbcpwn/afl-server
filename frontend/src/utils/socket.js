@@ -11,7 +11,7 @@ class SocketClient {
     this.reconnectDelay = 3000
   }
 
-  connect(url = 'http://localhost:5000', options = {}) {
+  connect(url = '', options = {}) {
     return new Promise((resolve, reject) => {
       if (this.socket && this.connected) {
         resolve(this.socket)
