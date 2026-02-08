@@ -200,10 +200,10 @@ import {
 import socketClient from '@/utils/socket'
 import {
   getTaskDetail,
-  startTask,
-  pauseTask,
-  resumeTask,
-  stopTask,
+  startTask as apiStartTask,
+  pauseTask as apiPauseTask,
+  resumeTask as apiResumeTask,
+  stopTask as apiStopTask,
   getTaskStats,
   getTaskCrashes
 } from '@/api/tasks'
@@ -317,7 +317,7 @@ const handleStart = async () => {
     )
 
     starting.value = true
-    await startTask(route.params.id, 1)
+    await apiStartTask(route.params.id, 1)
     ElMessage.success('任务启动成功')
 
     // 订阅任务更新
@@ -333,7 +333,7 @@ const handleStart = async () => {
 
 const handlePause = async () => {
   try {
-    await pauseTask(route.params.id)
+    await apiPauseTask(route.params.id)
     ElMessage.success('任务已暂停')
     task.value.status = 'paused'
   } catch (error) {
@@ -343,7 +343,7 @@ const handlePause = async () => {
 
 const handleResume = async () => {
   try {
-    await resumeTask(route.params.id)
+    await apiResumeTask(route.params.id)
     ElMessage.success('任务已恢复')
     task.value.status = 'running'
   } catch (error) {
@@ -363,7 +363,7 @@ const handleStop = async () => {
       }
     )
 
-    await stopTask(route.params.id)
+    await apiStopTask(route.params.id)
     ElMessage.success('任务已停止')
     task.value.status = 'stopped'
 

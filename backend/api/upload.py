@@ -120,16 +120,18 @@ class WhiteboxUpload(Resource):
             task_manager.update_task_status(task.id, task.status, message="Compiling")
             task_manager.update_task_status(task.id, TaskStatus.COMPILING)
 
-            success, error_msg = await compilation_service.compile_source(
+            import asyncio
+            success, error_msg = asyncio.run(compilation_service.compile_source(
                 task, saved_files, main_file, compile_args
-            )
+            ))
 
             if not success:
                 task_manager.update_task_status(task.id, TaskStatus.FAILED, error_msg)
                 return {"error": f"编译失败: {error_msg}"}, 400
 
             # 添加默认种子
-            await seed_service.add_default_seeds(task.id)
+            import asyncio
+            asyncio.run(seed_service.add_default_seeds(task.id))
 
             # 清理临时文件
             shutil.rmtree(temp_dir, ignore_errors=True)
@@ -178,7 +180,8 @@ class BlackboxUpload(Resource):
             filepath = save_upload_file(file, temp_dir)
 
             # 验证 ELF 文件
-            success, error_msg = await compilation_service.validate_binary(filepath)
+            import asyncio
+            success, error_msg = asyncio.run(compilation_service.validate_binary(filepath))
             if not success:
                 return {"error": f"ELF 文件验证失败: {error_msg}"}, 400
 
@@ -202,7 +205,7 @@ class BlackboxUpload(Resource):
             task.target_binary = filepath
 
             # 添加默认种子
-            await seed_service.add_default_seeds(task.id)
+            asyncio.run(seed_service.add_default_seeds(task.id))
 
             # 清理临时目录（只保留目标文件）
             for f in os.listdir(temp_dir):
@@ -257,7 +260,8 @@ class SeedsUpload(Resource):
                 os.makedirs(temp_dir, exist_ok=True)
 
             # 保存种子文件
-            saved_count = await seed_service.save_seeds(task_id, file_data)
+            import asyncio
+            saved_count = asyncio.run(seed_service.save_seeds(task_id, file_data))
 
             return {
                 "task_id": task_id,

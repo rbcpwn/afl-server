@@ -1,5 +1,12 @@
 import request from '@/utils/request'
 
+export const getTasks = () => {
+  return request({
+    url: '/tasks',
+    method: 'get'
+  })
+}
+
 export const getDashboardStats = () => {
   return request({
     url: '/results/dashboard',
@@ -57,6 +64,13 @@ export const getTaskCrashes = (taskId) => {
 export const getTaskCorpus = (taskId) => {
   return request({
     url: `/tasks/${taskId}/corpus`,
+    method: 'get'
+  })
+}
+
+export const getTaskDetail = (taskId) => {
+  return request({
+    url: `/tasks/${taskId}`,
     method: 'get'
   })
 }

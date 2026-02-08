@@ -131,7 +131,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search } from '@element-plus/icons-vue'
-import { getTasks, startTask, pauseTask, stopTask, deleteTask as apiDeleteTask } from '@/api/tasks'
+import { getTasks, startTask as apiStartTask, pauseTask as apiPauseTask, stopTask as apiStopTask, deleteTask as apiDeleteTask } from '@/api/tasks'
 
 const router = useRouter()
 const route = useRoute()
@@ -229,7 +229,7 @@ const startTask = async (task) => {
       }
     )
 
-    await startTask(task.id, 1)
+    await apiStartTask(task.id, 1)
     ElMessage.success(`任务 "${task.name}" 已启动`)
     await loadTasks()
   } catch (error) {
@@ -251,7 +251,7 @@ const pauseTask = async (task) => {
       }
     )
 
-    await pauseTask(task.id)
+    await apiPauseTask(task.id)
     ElMessage.success(`任务 "${task.name}" 已暂停`)
     await loadTasks()
   } catch (error) {

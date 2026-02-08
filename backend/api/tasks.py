@@ -97,7 +97,8 @@ class TaskStart(Resource):
             fuzzer_count = data.fuzzer_count
 
             # 启动任务
-            success = await task_manager.start_fuzz(task_id, fuzzer_count)
+            import asyncio
+            success = asyncio.run(task_manager.start_fuzz(task_id, fuzzer_count))
             if not success:
                 return {"error": "任务启动失败"}, 400
 
@@ -173,7 +174,7 @@ class TaskStats(Resource):
             if not task:
                 return {"error": "任务不存在"}, 404
 
-            stats = await monitoring_service.get_task_stats(task_id)
+            stats = asyncio.run(monitoring_service.get_task_stats(task_id))
 
             return FuzzStats(
                 task_id=task_id,

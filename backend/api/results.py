@@ -17,7 +17,8 @@ class Dashboard(Resource):
     def get(self):
         """获取仪表盘统计数据"""
         try:
-            stats = await monitoring_service.get_dashboard_stats()
+            import asyncio
+            stats = asyncio.run(monitoring_service.get_dashboard_stats())
 
             return DashboardStats(**stats).model_dump(), 200
 
