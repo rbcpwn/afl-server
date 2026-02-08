@@ -1,6 +1,6 @@
 flask==3.0.2
 flask-cors==4.0.0
-flask-socketio==5.3.6
+flask-socketio==5.3.4
 python-socketio==5.11.1
 eventlet==0.33.3
 psutil==5.9.8

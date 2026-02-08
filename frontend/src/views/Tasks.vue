@@ -57,9 +57,9 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="exec_count" label="执行次数" width="120">
+        <el-table-column prop="total_execs" label="总执行数" width="120">
           <template #default="{ row }">
-            {{ formatNumber(row.exec_count) }}
+            {{ formatNumber(row.total_execs) }}
           </template>
         </el-table-column>
         <el-table-column prop="unique_crashes" label="崩溃数" width="80">
@@ -67,6 +67,16 @@
             <span :class="{ 'crash-count': row.unique_crashes > 0 }">
               {{ row.unique_crashes }}
             </span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="corpus_count" label="语料数" width="80">
+          <template #default="{ row }">
+            {{ formatNumber(row.corpus_count) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="edges_found" label="边数" width="80">
+          <template #default="{ row }">
+            {{ formatNumber(row.edges_found) }}
           </template>
         </el-table-column>
         <el-table-column prop="coverage" label="覆盖率" width="100">
@@ -77,7 +87,7 @@
             />
           </template>
         </el-table-column>
-        <el-table-column prop="createdAt" label="创建时间" width="160" />
+        <el-table-column prop="created_at" label="创建时间" width="160" />
         <el-table-column label="操作" width="220" fixed="right">
           <template #default="{ row }">
             <el-button

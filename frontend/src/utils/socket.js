@@ -22,7 +22,8 @@ class SocketClient {
         transports: ['websocket', 'polling'],
         reconnection: true,
         reconnectionDelay: this.reconnectDelay,
-        reconnectionAttempts: this.maxReconnectAttempts
+        reconnectionAttempts: this.maxReconnectAttempts,
+        path: '/socket.io/'
       }
 
       this.socket = io(url, { ...defaultOptions, ...options })
