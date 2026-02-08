@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git checkout -b 260208-feat-create-vue-frontend)",
+      "Bash(tree -L 3 /workspace/frontend)",
+      "Bash(git add frontend/)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: 添加 Vue.js 前端项目\n\n- 实现文件上传组件（白盒/黑盒测试）\n- 实现任务管理页面\n- 实现结果分析页面\n- 配置 Vite + Vue Router + Pinia\n- 配置 Element Plus UI 组件库\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push -u origin 260208-feat-create-vue-frontend)",
+      "Bash(git checkout -b 260208-feat-develop-backend)",
+      "Bash(tree -L 3 /workspace)",
+      "Bash(git add .)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: 实现完整的 AFL Fuzz 平台\n\n后端：\n- 实现文件上传 API（白盒/黑盒测试）\n- 实现 AFL 启动和任务管理\n- 实现 WebSocket 实时监控\n- 实现崩溃收集和覆盖率统计\n- 添加任务状态管理和进程控制\n\n前端：\n- 添加仪表盘页面，展示平台整体状态\n- 添加任务详情页面，支持实时监控\n- 添加 WebSocket 客户端，实现实时数据推送\n- 完善任务列表页面，集成后端 API\n- 更新导航菜单，添加仪表盘入口\n\n部署：\n- 添加 Dockerfile（前端/后端）\n- 添加 docker-compose.yml 配置\n- 添加 nginx 反向代理配置\n- 添加开发环境 docker-compose.dev.yml\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push -u origin 260208-feat-develop-backend)",
+      "Bash(chmod +x /workspace/setup.sh /workspace/start-dev.sh)",
+      "Bash(ls -la /workspace/*.sh /workspace/*.md)",
+      "Bash(git add DEV_GUIDE.md setup.sh start-dev.sh stop-dev.sh)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: 添加本地开发环境搭建和启动脚本\n\n- 添加 setup.sh 环境搭建脚本（一键安装 AFL、创建虚拟环境）\n- 添加 start-dev.sh 服务启动脚本（支持交互式菜单和命令行参数）\n- 添加 stop-dev.sh 服务停止脚本\n- 添加 DEV_GUIDE.md 开发环境说明文档\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(pip install --break-system-packages flask flask-cors flask-socketio flask-restx pydantic pydantic-settings psutil eventlet aiofiles)",
+      "Bash(npm install)"
+    ]
+  }
+}
