@@ -274,7 +274,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  socketClient.removeAllListeners('dashboard_update')
+  socketClient.offConnect(handleSocketConnected)
 })
 </script>
 
