@@ -1,7 +1,7 @@
 #!/bin/bash
 # 停止 AFL Fuzz 平台服务
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND_DIR="${PROJECT_ROOT}/backend"
 FRONTEND_DIR="${PROJECT_ROOT}/frontend"
 BACKEND_PID_FILE="${PROJECT_ROOT}/.backend.pid"
