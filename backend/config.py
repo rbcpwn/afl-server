@@ -17,9 +17,28 @@ class Settings(BaseSettings):
     seeds_dir: str = os.path.join(base_dir, "seeds")
 
     # AFL 配置
-    afl_path: str = "/usr/local/bin/afl-fuzz"
-    afl_gcc_path: str = "/usr/local/bin/afl-gcc"
-    afl_gxx_path: str = "/usr/local/bin/afl-g++"
+    # 使用本地 AFL 的路径（通过 afl-setup.sh 安装）
+    import subprocess
+
+    # 检查 AFL 命令是否存在
+    def check_afl_command(cmd_path):
+        if os.path.exists(cmd_path):
+            return cmd_path
+        # 尝试在系统路径查找
+        basename = os.path.basename(cmd_path)
+        system_path = f"/usr/local/bin/{basename}"
+        if os.path.exists(system_path):
+            return system_path
+        return cmd_path
+
+    afl_path = check_afl_command("/usr/local/bin/afl-fuzz")
+    afl_gcc_path = check_afl_command("/usr/local/bin/afl-gcc")
+    afl_gxx_path = check_afl_command("/usr/local/bin/afl-g++")
+
+    # 备用路径（如果需要可以从环境变量或 .env 文件读取）
+    # afl_path: str = "/usr/local/bin/afl-fuzz"
+    # afl_gcc_path: str = "/usr/local/bin/afl-gcc"
+    # afl_gxx_path: str = "/usr/local/bin/afl-g++"
     qemu_mode: bool = True
     default_timeout: int = 1000  # ms
 
