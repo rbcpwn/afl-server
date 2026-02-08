@@ -7,6 +7,11 @@ const routes = [
     component: () => import('@/views/Home.vue')
   },
   {
+    path: '/dashboard',
+    name: 'Dashboard',
+    component: () => import('@/views/Dashboard.vue')
+  },
+  {
     path: '/upload',
     name: 'Upload',
     component: () => import('@/views/Upload.vue')
@@ -15,6 +20,11 @@ const routes = [
     path: '/tasks',
     name: 'Tasks',
     component: () => import('@/views/Tasks.vue')
+  },
+  {
+    path: '/tasks/:id',
+    name: 'TaskDetail',
+    component: () => import('@/views/TaskDetail.vue')
   },
   {
     path: '/results',

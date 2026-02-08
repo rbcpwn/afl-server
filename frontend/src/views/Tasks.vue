@@ -131,6 +131,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search } from '@element-plus/icons-vue'
+import { getTasks, startTask, pauseTask, stopTask, deleteTask as apiDeleteTask } from '@/api/tasks'
 
 const router = useRouter()
 const route = useRoute()
@@ -228,9 +229,13 @@ const startTask = async (task) => {
       }
     )
 
-    task.status = 'running'
+    await startTask(task.id, 1)
     ElMessage.success(`任务 "${task.name}" 已启动`)
-  } catch {
+    await loadTasks()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error(error.message || '启动失败')
+    }
   }
 }
 
@@ -246,14 +251,14 @@ const pauseTask = async (task) => {
       }
     )
 
-    task.status = 'paused'
+    await pauseTask(task.id)
     ElMessage.success(`任务 "${task.name}" 已暂停`)
-  } catch {
+    await loadTasks()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error(error.message || '暂停失败')
+    }
   }
-}
-
-const viewDetails = (task) => {
-  router.push(`/tasks/${task.id}`)
 }
 
 const deleteTask = async (task) => {
@@ -268,69 +273,39 @@ const deleteTask = async (task) => {
       }
     )
 
-    const index = tasks.value.findIndex(t => t.id === task.id)
-    if (index > -1) {
-      tasks.value.splice(index, 1)
-    }
+    await apiDeleteTask(task.id)
     ElMessage.success(`任务 "${task.name}" 已删除`)
-  } catch {
+    await loadTasks()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error(error.message || '删除失败')
+    }
   }
+}
+
+const viewDetails = (task) => {
+  router.push(`/tasks/${task.id}`)
 }
 
 const goToUpload = () => {
   router.push('/upload')
 }
 
-const loadTasks = () => {
-  tasks.value = [
-    {
-      id: 1,
-      name: 'test_whitebox_vuln',
-      type: 'whitebox',
-      status: 'running',
-      execCount: 1523456,
-      crashCount: 3,
-      coverage: 67.5,
-      createdAt: '2024-01-15 10:30:00'
-    },
-    {
-      id: 2,
-      name: 'test_blackbox_app',
-      type: 'blackbox',
-      status: 'pending',
-      execCount: 0,
-      crashCount: 0,
-      coverage: 0,
-      createdAt: '2024-01-16 14:20:00'
-    },
-    {
-      id: 3,
-      name: 'buffer_overflow_test',
-      type: 'whitebox',
-      status: 'completed',
-      execCount: 5678901,
-      crashCount: 12,
-      coverage: 92.3,
-      createdAt: '2024-01-14 09:15:00'
-    },
-    {
-      id: 4,
-      name: 'format_string_bug',
-      type: 'whitebox',
-      status: 'failed',
-      execCount: 234567,
-      crashCount: 0,
-      coverage: 34.2,
-      createdAt: '2024-01-17 11:45:00'
-    }
-  ]
+const loadTasks = async () => {
+  try {
+    const response = await getTasks()
+    tasks.value = response.data.tasks || []
 
-  if (route.query.taskId) {
-    const taskId = parseInt(route.query.taskId)
-    const task = tasks.value.find(t => t.id === taskId)
-    if (task) {
-      ElMessage.success(`已跳转到任务: ${task.name}`)
+    if (route.query.taskId) {
+      const taskId = parseInt(route.query.taskId)
+      const task = tasks.value.find(t => t.id === taskId)
+      if (task) {
+        ElMessage.success(`已跳转到任务: ${task.name}`)
+      }
     }
+  } catch (error) {
+    console.error('加载任务列表失败:', error)
+    tasks.value = []
   }
 }
 

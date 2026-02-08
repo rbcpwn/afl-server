@@ -15,6 +15,10 @@
               <el-icon><HomeFilled /></el-icon>
               <span>首页</span>
             </el-menu-item>
+            <el-menu-item index="/dashboard">
+              <el-icon><DataLine /></el-icon>
+              <span>仪表盘</span>
+            </el-menu-item>
             <el-menu-item index="/upload">
               <el-icon><UploadFilled /></el-icon>
               <span>上传测试文件</span>
@@ -24,7 +28,7 @@
               <span>Fuzz 任务</span>
             </el-menu-item>
             <el-menu-item index="/results">
-              <el-icon><DataLine /></el-icon>
+              <el-icon><Document /></el-icon>
               <span>结果分析</span>
             </el-menu-item>
           </el-menu>
@@ -40,7 +44,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { HomeFilled, UploadFilled, List, DataLine } from '@element-plus/icons-vue'
+import { HomeFilled, UploadFilled, List, DataLine, Document } from '@element-plus/icons-vue'
 
 const route = useRoute()
 

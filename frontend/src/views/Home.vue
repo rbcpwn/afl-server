@@ -54,6 +54,9 @@
           立即开始
           <el-icon class="el-icon--right"><ArrowRight /></el-icon>
         </el-button>
+        <el-button size="large" @click="goToDashboard">
+          查看仪表盘
+        </el-button>
       </div>
     </el-card>
   </div>
@@ -67,6 +70,10 @@ const router = useRouter()
 
 const goToUpload = () => {
   router.push('/upload')
+}
+
+const goToDashboard = () => {
+  router.push('/dashboard')
 }
 </script>
 

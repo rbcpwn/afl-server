@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # 后端服务
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: afl-fuzz-backend
+    hostname: backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/tasks:/app/tasks
+      - ./backend/outputs:/app/outputs
+      - ./backend/crashes:/app/crashes
+      - ./backend/seeds:/app/seeds
+    environment:
+      - DEBUG=False
+      - HOST=0.0.0.0
+      - PORT=5000
+    restart: unless-stopped
+    networks:
+      - afl-network
+
+  # 前端服务
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: afl-fuzz-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - afl-network
+
+networks:
+  afl-network:
+    driver: bridge
+
+volumes:
+  uploads:
+  tasks:
+  outputs:
+  crashes:
+  seeds:
