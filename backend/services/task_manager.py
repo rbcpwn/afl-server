@@ -208,7 +208,7 @@ class TaskManager:
 
         return True
 
-    async def start_fuzz(self, task_id: int, fuzzer_count: int = 1) -> bool:
+    def start_fuzz(self, task_id: int, fuzzer_count: int = 1) -> bool:
         """启动 Fuzz 测试"""
         task = self._tasks.get(task_id)
         if not task:
@@ -235,7 +235,7 @@ class TaskManager:
             env["AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES"] = "1"
             env["AFL_SKIP_CPUFREQ"] = "1"
 
-            # 使用异步方式启动进程
+            # 启动进程
             process = subprocess.Popen(
                 command,
                 shell=False,
@@ -248,8 +248,14 @@ class TaskManager:
             task.pid = process.pid
             task.fuzzer_count = fuzzer_count
 
-            # 启动监控线程
-            asyncio.create_task(self._monitor_task(task_id))
+            # 在线程中启动监控任务
+            import threading
+            monitor_thread = threading.Thread(
+                target=self._monitor_task_sync,
+                args=(task_id,),
+                daemon=True
+            )
+            monitor_thread.start()
 
             return True
 
@@ -265,7 +271,11 @@ class TaskManager:
         command.extend(["-i", task.seeds_dir])  # 输入目录
         command.extend(["-o", task.output_dir])  # 输出目录
 
+        # 内存限制 - 在虚拟化环境中不进行 CPU 节流检测
+        command.extend(["-m", "none"])
+
         # 超时时间 - 使用 AFL 默认值，除非用户自定义
+        timeout_customized = False
         if task.fuzz_args:
             # 检查用户是否自定义了超时参数
             timeout_customized = any("-t" in arg or "--timeout" in arg for arg in task.fuzz_args.split())
@@ -276,33 +286,69 @@ class TaskManager:
         if task.fuzz_args:
             command.extend(task.fuzz_args.split())
 
-        # 如果用户没有自定义参数，添加 AFL 默认参数以提高性能
-        if not task.fuzz_args:
-            # 使用 AFL 默认参数（基于 AFL 最佳实践）
-            command.extend([
-                "-m", "none",                    # 不进行 CPU 节流检测（在虚拟化环境中使用）
-                "-d",                             # 去除确定性模式
-                "-Q",                             # 使用 QEMU 模式的日志格式
-                "-b",                             # 保存崩溃的输入
-            ])
-        else:
-            # 即使用户提供了参数，也确保 -m none（在虚拟化环境中推荐）
-            if not any("-m" in arg for arg in task.fuzz_args.split()):
-                command.extend(["-m", "none"])
+        # 黑盒测试（未插桩二进制）使用 dumb 模式
+        if task.type == TaskType.BLACKBOX:
+            # 检查用户是否已经在参数中指定了 -n
+            has_n_flag = any("-n" in arg for arg in command[1:])
+            if not has_n_flag:
+                command.insert(1, "-n")  # 使用 dumb fuzzer 模式
 
-        # 内存限制
-        command.extend(["-m", "none"])  # 确保在虚拟化环境中不进行 CPU 节流检测
-
-        # 多实例模式
-        if fuzzer_count > 1:
-            command.extend(["-M", "fuzzer0"])  # 主 fuzzer
-        else:
+        # 多实例模式（dumb 模式下不支持 -M/-S）
+        if task.type == TaskType.WHITEBOX and fuzzer_count > 1:
             command.extend(["-M", "fuzzer0"])
+        elif task.type == TaskType.WHITEBOX:
+            # 单实例模式使用 -S
+            command.extend(["-S", "fuzzer0"])
 
         # 目标程序
         command.extend(["--", task.target_binary])
 
         return command
+
+    def _monitor_task_sync(self, task_id: int):
+        """监控任务状态（同步版本，用于线程）"""
+        import time
+        from services import monitoring_service
+
+        task = self._tasks.get(task_id)
+        if not task:
+            return
+
+        while task.task_status == TaskStatus.RUNNING:
+            # 更新统计信息
+            try:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                stats = loop.run_until_complete(monitoring_service.get_task_stats(task_id))
+                loop.close()
+
+                if stats:
+                    self.update_task_stats(
+                        task_id,
+                        exec_count=stats.get("exec_count", 0),
+                        unique_crashes=stats.get("unique_crashes", 0),
+                        total_execs=stats.get("total_execs", 0),
+                        execs_per_sec=stats.get("execs_per_sec", 0.0),
+                        corpus_count=stats.get("corpus_count", 0),
+                        coverage=stats.get("coverage", 0.0),
+                        edges_found=stats.get("edges_found", 0)
+                    )
+            except Exception as e:
+                print(f"监控任务统计失败: {e}")
+
+            # 检查进程是否还在运行
+            if task_id in self._task_processes:
+                process = self._task_processes[task_id]
+                if process.poll() is not None:
+                    # 进程已退出
+                    return_code = process.returncode
+                    if return_code != 0:
+                        self.update_task_status(task_id, TaskStatus.FAILED, f"进程异常退出，返回码: {return_code}")
+                    else:
+                        self.update_task_status(task_id, TaskStatus.COMPLETED)
+                    break
+
+            time.sleep(2)
 
     async def _monitor_task(self, task_id: int):
         """监控任务状态"""

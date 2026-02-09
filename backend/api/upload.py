@@ -122,17 +122,21 @@ class WhiteboxUpload(Resource):
             task_manager.update_task_status(task.id, TaskStatus.COMPILING, error_message="Compiling")
 
             import asyncio
-            success, error_msg = asyncio.run(compilation_service.compile_source(
+            loop = asyncio.new_event_loop()
+            success, error_msg = loop.run_until_complete(compilation_service.compile_source(
                 task, saved_files, main_file, compile_args
             ))
+            loop.close()
 
             if not success:
                 task_manager.update_task_status(task.id, TaskStatus.FAILED, error_msg)
                 return {"error": f"编译失败: {error_msg}"}, 400
 
             # 添加默认种子
-            import asyncio
-            asyncio.run(seed_service.add_default_seeds(task.id))
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(seed_service.add_default_seeds(task.id))
+            loop.close()
 
             # 清理临时文件
             shutil.rmtree(temp_dir, ignore_errors=True)
@@ -202,24 +206,32 @@ class BlackboxUpload(Resource):
                 elf_file=filepath
             )
 
+            # 将 ELF 文件移动到任务目录
+            task_dir = os.path.join(settings.tasks_dir, f"task_{task.id}")
+            target_filepath = os.path.join(task_dir, "target")
+            shutil.move(filepath, target_filepath)
+            os.chmod(target_filepath, 0o755)
+
             # 设置目标二进制文件
-            task.target_binary = filepath
+            task.target_binary = target_filepath
 
             # 添加默认种子
-            asyncio.run(seed_service.add_default_seeds(task.id))
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(seed_service.add_default_seeds(task.id))
+            loop.close()
 
-            # 清理临时目录（只保留目标文件）
-            for f in os.listdir(temp_dir):
-                if f != os.path.basename(filepath):
-                    os.remove(os.path.join(temp_dir, f))
+            # 清理临时目录
+            if os.path.exists(temp_dir):
+                shutil.rmtree(temp_dir, ignore_errors=True)
 
             task_manager.update_task_status(task.id, TaskStatus.READY, error_message=None)
 
-            return TaskCreateResponse(
-                task_id=task.id,
-                task_name=task.name,
-                message="黑盒测试任务创建成功"
-            ).model_dump_json(), 201
+            return {
+                "task_id": task.id,
+                "task_name": task.name,
+                "message": "黑盒测试任务创建成功"
+            }, 201
 
         except Exception as e:
             current_app.logger.error(f"黑盒测试任务创建失败: {e}")
@@ -262,7 +274,10 @@ class SeedsUpload(Resource):
 
             # 保存种子文件
             import asyncio
-            saved_count = asyncio.run(seed_service.save_seeds(task_id, file_data))
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            saved_count = loop.run_until_complete(seed_service.save_seeds(task_id, file_data))
+            loop.close()
 
             return {
                 "task_id": task_id,
