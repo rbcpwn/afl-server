@@ -11,6 +11,8 @@ from pathlib import Path
 from config import settings
 from models import Task, TaskType, TaskStatus, InputType
 
+_UNSET = object()
+
 
 class TaskManager:
     """任务管理器 - 负责任务的创建、启动、停止和状态管理"""
@@ -101,13 +103,13 @@ class TaskManager:
         """获取所有任务"""
         return list(self._tasks.values())
 
-    def update_task_status(self, task_id: int, status: TaskStatus, error_message: str = None):
+    def update_task_status(self, task_id: int, status: TaskStatus, error_message=_UNSET):
         """更新任务状态"""
         task = self._tasks.get(task_id)
         if task:
             task.task_status = status
             task.last_updated = datetime.now()
-            if error_message:
+            if error_message is not _UNSET:
                 task.error_message = error_message
 
             if status == TaskStatus.RUNNING and not task.started_at:
@@ -308,9 +310,7 @@ class TaskManager:
         if not task:
             return
 
-        from services import MonitoringService
-
-        monitoring_service = MonitoringService()
+        from services import monitoring_service
 
         while task.task_status == TaskStatus.RUNNING:
             # 更新统计信息

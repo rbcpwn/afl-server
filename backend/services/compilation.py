@@ -5,7 +5,7 @@ from typing import List, Optional
 from pathlib import Path
 
 from config import settings
-from models import Task, TaskType, InputType
+from models import Task, TaskType, InputType, TaskStatus
 
 
 class CompilationService:
@@ -87,7 +87,7 @@ class CompilationService:
 
             # 更新任务信息
             task.target_binary = output_file
-            task.task_status.value = "READY"
+            task.task_status = TaskStatus.READY
 
             return True, None
 
@@ -197,9 +197,9 @@ class SeedService:
         # 读取任务的输入类型
         from services.task_manager import task_manager
         task = task_manager.get_task(task_id)
-        input_type = task.input_type.value if task else "stdin"
+        input_type = (task.input_type.value if task else "stdin").lower()
 
-        seeds = default_seeds.get(input_type.upper(), default_seeds["STDIN"])
+        seeds = default_seeds.get(input_type, default_seeds["stdin"])
 
         for filename, content in seeds:
             filepath = os.path.join(task_seeds_dir, filename)

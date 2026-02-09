@@ -1,6 +1,7 @@
 import os
 import shutil
 import tempfile
+import asyncio
 from datetime import datetime
 from typing import List
 from werkzeug.utils import secure_filename
@@ -136,7 +137,7 @@ class WhiteboxUpload(Resource):
             # 清理临时文件
             shutil.rmtree(temp_dir, ignore_errors=True)
 
-            task_manager.update_task_status(task.id, TaskStatus.READY)
+            task_manager.update_task_status(task.id, TaskStatus.READY, error_message=None)
 
             return {
                 "task_id": task.id,
@@ -179,9 +180,12 @@ class BlackboxUpload(Resource):
             temp_dir = os.path.join(settings.upload_dir, f"temp_{datetime.now().timestamp()}")
             filepath = save_upload_file(file, temp_dir)
 
-            # 设置可执行权限
+            # 设置可执行权限并验证 ELF 文件有效性
             os.chmod(filepath, 0o755)
 
+            success, error_msg = asyncio.run(
+                compilation_service.validate_binary(filepath)
+            )
             if not success:
                 return {"error": f"ELF 文件验证失败: {error_msg}"}, 400
 
@@ -209,7 +213,7 @@ class BlackboxUpload(Resource):
                 if f != os.path.basename(filepath):
                     os.remove(os.path.join(temp_dir, f))
 
-            task_manager.update_task_status(task.id, TaskStatus.READY)
+            task_manager.update_task_status(task.id, TaskStatus.READY, error_message=None)
 
             return TaskCreateResponse(
                 task_id=task.id,
