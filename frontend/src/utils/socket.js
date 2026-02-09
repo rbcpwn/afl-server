@@ -1,3 +1,4 @@
+import { io } from 'socket.io-client'
 import { ElMessage } from 'element-plus'
 
 // 全局事件总线，用于组件间通信

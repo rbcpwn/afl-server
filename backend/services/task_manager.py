@@ -262,14 +262,34 @@ class TaskManager:
         # 基础参数
         command.extend(["-i", task.seeds_dir])  # 输入目录
         command.extend(["-o", task.output_dir])  # 输出目录
-        command.extend(["-t", str(settings.default_timeout)])  # 超时时间
+
+        # 超时时间 - 使用 AFL 默认值，除非用户自定义
+        if task.fuzz_args:
+            # 检查用户是否自定义了超时参数
+            timeout_customized = any("-t" in arg or "--timeout" in arg for arg in task.fuzz_args.split())
+            if not timeout_customized:
+                command.extend(["-t", str(settings.default_timeout)])
 
         # 添加用户自定义参数
         if task.fuzz_args:
             command.extend(task.fuzz_args.split())
 
+        # 如果用户没有自定义参数，添加 AFL 默认参数以提高性能
+        if not task.fuzz_args:
+            # 使用 AFL 默认参数（基于 AFL 最佳实践）
+            command.extend([
+                "-m", "none",                    # 不进行 CPU 节流检测（在虚拟化环境中使用）
+                "-d",                             # 去除确定性模式
+                "-Q",                             # 使用 QEMU 模式的日志格式
+                "-b",                             # 保存崩溃的输入
+            ])
+        else:
+            # 即使用户提供了参数，也确保 -m none（在虚拟化环境中推荐）
+            if not any("-m" in arg for arg in task.fuzz_args.split()):
+                command.extend(["-m", "none"])
+
         # 内存限制
-        command.extend(["-m", "none"])
+        command.extend(["-m", "none"])  # 确保在虚拟化环境中不进行 CPU 节流检测
 
         # 多实例模式
         if fuzzer_count > 1:
