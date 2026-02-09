@@ -16,7 +16,22 @@
       "Bash(git add DEV_GUIDE.md setup.sh start-dev.sh stop-dev.sh)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: 添加本地开发环境搭建和启动脚本\n\n- 添加 setup.sh 环境搭建脚本（一键安装 AFL、创建虚拟环境）\n- 添加 start-dev.sh 服务启动脚本（支持交互式菜单和命令行参数）\n- 添加 stop-dev.sh 服务停止脚本\n- 添加 DEV_GUIDE.md 开发环境说明文档\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(pip install --break-system-packages flask flask-cors flask-socketio flask-restx pydantic pydantic-settings psutil eventlet aiofiles)",
-      "Bash(npm install)"
+      "Bash(npm install)",
+      "Bash(node --version)",
+      "Bash(npm --version)",
+      "Bash(make)",
+      "Bash(make install)",
+      "Bash(afl-fuzz)",
+      "Bash(python3 -m venv /workspace/venv)",
+      "Bash(source /workspace/venv/bin/activate)",
+      "Bash(pip install --break-system-packages -r /workspace/backend/requirements.txt)",
+      "Bash(apt install -y python3.11-venv python3-pip)",
+      "Bash(apt install -y python3-venv)",
+      "Bash(apt search python)",
+      "Bash(python3 -m ensurepip --version)",
+      "Bash(pip3 --version)",
+      "Bash(npm install --prefix /workspace/frontend)",
+      "mcp__mcaiBuiltin__request_preview"
     ]
   }
 }
