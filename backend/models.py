@@ -45,8 +45,8 @@ class Task(BaseModel):
     id: int
     name: str
     type: TaskType
-    status: TaskStatus
-    input_type: InputType
+    task_status: TaskStatus = Field(default=TaskStatus.PENDING, description="任务状态")
+    input_type: InputType = Field(default=InputType.STDIN, description="输入类型")
     compile_args: Optional[str] = None
     fuzz_args: str = ""
     dependencies: Optional[str] = None
@@ -93,7 +93,7 @@ class TaskListResponse(BaseModel):
 
 class FuzzStats(BaseModel):
     task_id: int
-    status: TaskStatus
+    status: str = Field(default="pending", description="任务状态")
 
     # AFL 统计
     exec_count: int

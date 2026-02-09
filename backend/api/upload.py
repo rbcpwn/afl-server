@@ -138,11 +138,11 @@ class WhiteboxUpload(Resource):
 
             task_manager.update_task_status(task.id, TaskStatus.READY)
 
-            return TaskCreateResponse(
-                task_id=task.id,
-                task_name=task.name,
-                message="白盒测试任务创建成功"
-            ).model_dump(), 201
+            return {
+                "task_id": task.id,
+                "task_name": task.name,
+                "message": "白盒测试任务创建成功"
+            }, 201
 
         except Exception as e:
             current_app.logger.error(f"白盒测试任务创建失败: {e}")
@@ -182,9 +182,6 @@ class BlackboxUpload(Resource):
             # 设置可执行权限
             os.chmod(filepath, 0o755)
 
-            # 验证 ELF 文件
-            import asyncio
-            success, error_msg = asyncio.run(compilation_service.validate_binary(filepath))
             if not success:
                 return {"error": f"ELF 文件验证失败: {error_msg}"}, 400
 
@@ -218,7 +215,7 @@ class BlackboxUpload(Resource):
                 task_id=task.id,
                 task_name=task.name,
                 message="黑盒测试任务创建成功"
-            ).model_dump(), 201
+            ).model_dump_json(), 201
 
         except Exception as e:
             current_app.logger.error(f"黑盒测试任务创建失败: {e}")

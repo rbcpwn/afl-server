@@ -105,7 +105,7 @@ class TaskManager:
         """更新任务状态"""
         task = self._tasks.get(task_id)
         if task:
-            task.status = status
+            task.task_status = status
             task.last_updated = datetime.now()
             if error_message:
                 task.error_message = error_message
@@ -187,7 +187,7 @@ class TaskManager:
             return False
 
         # 停止正在运行的任务
-        if task.status == TaskStatus.RUNNING:
+        if task.task_status == TaskStatus.RUNNING:
             self.stop_task(task_id)
 
         # 删除进程记录
@@ -212,7 +212,7 @@ class TaskManager:
         if not task:
             return False
 
-        if task.status != TaskStatus.READY:
+        if task.task_status != TaskStatus.READY:
             return False
 
         try:
@@ -312,7 +312,7 @@ class TaskManager:
 
         monitoring_service = MonitoringService()
 
-        while task.status == TaskStatus.RUNNING:
+        while task.task_status == TaskStatus.RUNNING:
             # 更新统计信息
             stats = await monitoring_service.get_task_stats(task_id)
             if stats:
@@ -347,7 +347,7 @@ class TaskManager:
         if not task:
             return False
 
-        if task.status != TaskStatus.RUNNING:
+        if task.task_status != TaskStatus.RUNNING:
             return False
 
         try:
@@ -378,7 +378,7 @@ class TaskManager:
         if not task:
             return False
 
-        if task.status != TaskStatus.RUNNING:
+        if task.task_status != TaskStatus.RUNNING:
             return False
 
         try:
@@ -398,7 +398,7 @@ class TaskManager:
         if not task:
             return False
 
-        if task.status != TaskStatus.PAUSED:
+        if task.task_status != TaskStatus.PAUSED:
             return False
 
         try:

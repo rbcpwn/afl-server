@@ -87,7 +87,7 @@ class CompilationService:
 
             # 更新任务信息
             task.target_binary = output_file
-            task.status.value = "READY"
+            task.task_status.value = "READY"
 
             return True, None
 
@@ -111,7 +111,8 @@ class CompilationService:
                 ["file", binary_path],
                 capture_output=True,
                 text=True,
-                timeout=5
+                timeout=5,
+                shell=False  # 避免路径解析问题
             )
 
             if "ELF" not in result.stdout:
@@ -198,7 +199,7 @@ class SeedService:
         task = task_manager.get_task(task_id)
         input_type = task.input_type.value if task else "stdin"
 
-        seeds = default_seeds.get(input_type, default_seeds["stdin"])
+        seeds = default_seeds.get(input_type.upper(), default_seeds["STDIN"])
 
         for filename, content in seeds:
             filepath = os.path.join(task_seeds_dir, filename)

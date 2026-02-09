@@ -32,7 +32,7 @@ class TaskList(Resource):
             filtered_tasks = []
             for task in tasks:
                 # 状态过滤
-                if status_filter and task.status.value != status_filter:
+                if status_filter and task.task_status.value != status_filter:
                     continue
 
                 # 类型过滤
@@ -179,7 +179,7 @@ class TaskStats(Resource):
 
             return FuzzStats(
                 task_id=task_id,
-                status=task.status,
+                status=task.task_status,
                 exec_count=stats.get("exec_count", task.exec_count),
                 unique_crashes=stats.get("unique_crashes", task.unique_crashes),
                 unique_hangs=stats.get("unique_hangs", task.unique_hangs),

@@ -73,7 +73,7 @@ async def monitor_task_updates(task_id: int, socketio):
                 last_stats = stats.copy()
 
                 # 如果任务状态变化，发送状态更新
-                if task.status.value in ["completed", "failed", "stopped"]:
+                if task.task_status.value in ["completed", "failed", "stopped"]:
                     break
 
         except Exception as e:

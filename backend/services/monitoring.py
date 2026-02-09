@@ -186,13 +186,13 @@ class MonitoringService:
         coverage_count = 0
 
         for task in tasks:
-            if task.status.name == "RUNNING":
+            if task.task_status.name == "RUNNING":
                 stats["running_tasks"] += 1
-            elif task.status.name == "PENDING":
+            elif task.task_status.name == "PENDING":
                 stats["pending_tasks"] += 1
-            elif task.status.name == "COMPLETED":
+            elif task.task_status.name == "COMPLETED":
                 stats["completed_tasks"] += 1
-            elif task.status.name == "FAILED":
+            elif task.task_status.name == "FAILED":
                 stats["failed_tasks"] += 1
 
             stats["total_crashes"] += task.unique_crashes

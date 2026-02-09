@@ -145,7 +145,7 @@ class Coverage(Resource):
                         "path_coverage": task.coverage * 0.8,  # 简化处理
                         "unique_crashes": task.unique_crashes,
                         "total_execs": task.exec_count,
-                        "duration": "Running" if task.status.value == "running" else "Completed"
+                        "duration": "Running" if task.task_status.value == "running" else "Completed"
                     })
             else:
                 # 获取所有任务的覆盖率
@@ -158,7 +158,7 @@ class Coverage(Resource):
                         "path_coverage": task.coverage * 0.8,
                         "unique_crashes": task.unique_crashes,
                         "total_execs": task.exec_count,
-                        "duration": "Running" if task.status.value == "running" else "Completed"
+                        "duration": "Running" if task.task_status.value == "running" else "Completed"
                     })
 
             return {"coverage": coverage_data, "total": len(coverage_data)}, 200
