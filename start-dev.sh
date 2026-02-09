@@ -15,9 +15,16 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND_DIR="${PROJECT_ROOT}/backend"
 FRONTEND_DIR="${PROJECT_ROOT}/frontend"
 
-# Python 虚拟环境
+# Python 环境 (适配 Ubuntu 24.04，直接使用系统 Python)
+USE_VENV=true
 VENV_DIR="${PROJECT_ROOT}/venv"
 VENV_ACTIVATE="${VENV_DIR}/bin/activate"
+
+# 检查是否使用虚拟环境
+if [ ! -d "${VENV_DIR}" ]; then
+    USE_VENV=false
+    echo -e "${YELLOW}未检测到虚拟环境，将使用系统 Python${NC}"
+fi
 
 # PID 文件
 BACKEND_PID_FILE="${PROJECT_ROOT}/.backend.pid"
@@ -184,11 +191,20 @@ check_afl_environment() {
 
 # 检查环境
 check_environment() {
-    # 检查虚拟环境
-    if [ ! -d "${VENV_DIR}" ]; then
+    # 检查 Python 环境（虚拟环境或系统 Python）
+    if [ "$USE_VENV" = true ] && [ ! -d "${VENV_DIR}" ]; then
         echo -e "${RED}错误: Python 虚拟环境不存在${NC}"
         echo "请先运行: bash ${PROJECT_ROOT}/setup.sh"
         exit 1
+    fi
+
+    if [ "$USE_VENV" = false ]; then
+        # 检查系统 Python 是否安装了必要的包
+        if ! python3 -c "import flask" 2>/dev/null; then
+            echo -e "${RED}错误: 系统 Python 缺少必要的包${NC}"
+            echo "请运行: pip install --break-system-packages -r ${BACKEND_DIR}/requirements.txt"
+            exit 1
+        fi
     fi
 
     # 检查 node_modules
@@ -222,12 +238,14 @@ start_backend() {
         fi
     fi
 
-    # 激活虚拟环境并启动
-    # shellcheck disable=SC1090
-    # shellcheck disable=SC1091
-    source "${VENV_ACTIVATE}"
-
     cd "${BACKEND_DIR}"
+
+    # 激活虚拟环境（如果存在）
+    if [ "$USE_VENV" = true ]; then
+        # shellcheck disable=SC1090
+        # shellcheck disable=SC1091
+        source "${VENV_ACTIVATE}"
+    fi
 
     # 后台启动
     nohup python3 run.py --host 0.0.0.0 --port 5000 > "${BACKEND_DIR}/backend.log" 2>&1 &
