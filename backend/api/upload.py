@@ -118,8 +118,7 @@ class WhiteboxUpload(Resource):
             )
 
             # 编译源代码
-            task_manager.update_task_status(task.id, task.status, message="Compiling")
-            task_manager.update_task_status(task.id, TaskStatus.COMPILING)
+            task_manager.update_task_status(task.id, TaskStatus.COMPILING, error_message="Compiling")
 
             import asyncio
             success, error_msg = asyncio.run(compilation_service.compile_source(

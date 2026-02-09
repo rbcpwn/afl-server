@@ -80,6 +80,24 @@
                   clearable
                 />
               </el-form-item>
+              <el-form-item label="输入类型">
+                <el-select
+                  v-model="whiteboxForm.inputType"
+                  placeholder="请选择输入类型"
+                  style="width: 100%"
+                >
+                  <el-option label="标准输入 (stdin)" value="stdin" />
+                  <el-option label="文件输入" value="file" />
+                  <el-option label="命令行参数" value="args" />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="Fuzz 参数">
+                <el-input
+                  v-model="whiteboxForm.fuzzArgs"
+                  placeholder="例如: -t 1000 -m 50MB"
+                  clearable
+                />
+              </el-form-item>
 
               <el-form-item>
                 <el-button
@@ -163,6 +181,13 @@
                   type="textarea"
                   :rows="3"
                   placeholder="如有依赖库，请列出库名称（每行一个）"
+                />
+              </el-form-item>
+              <el-form-item label="Fuzz 参数">
+                <el-input
+                  v-model="blackboxForm.fuzzArgs"
+                  placeholder="例如: -t 1000 -m 50MB"
+                  clearable
                 />
               </el-form-item>
 
@@ -295,12 +320,15 @@ const taskList = ref([])
 const whiteboxForm = ref({
   taskName: '',
   mainFile: '',
-  compileArgs: ''
+  compileArgs: '',
+  fuzzArgs: '',
+  inputType: 'stdin'
 })
 
 const blackboxForm = ref({
   taskName: '',
   inputType: 'stdin',
+  fuzzArgs: '',
   dependencies: ''
 })
 
@@ -393,6 +421,8 @@ const handleWhiteboxUpload = async () => {
     formData.append('taskName', whiteboxForm.value.taskName)
     formData.append('mainFile', whiteboxForm.value.mainFile)
     formData.append('compileArgs', whiteboxForm.value.compileArgs || '')
+    formData.append('inputType', whiteboxForm.value.inputType || 'stdin')
+    formData.append('fuzzArgs', whiteboxForm.value.fuzzArgs || '')
 
     updateUploadProgress(50, '正在创建白盒测试任务...')
 
@@ -437,6 +467,7 @@ const handleBlackboxUpload = async () => {
     formData.append('file', elfFileList.value[0].raw)
     formData.append('taskName', blackboxForm.value.taskName)
     formData.append('inputType', blackboxForm.value.inputType)
+    formData.append('fuzzArgs', blackboxForm.value.fuzzArgs || '')
     formData.append('dependencies', blackboxForm.value.dependencies || '')
 
     updateUploadProgress(50, '正在创建黑盒测试任务...')
@@ -515,7 +546,9 @@ const resetWhiteboxForm = () => {
   whiteboxForm.value = {
     taskName: '',
     mainFile: '',
-    compileArgs: ''
+    compileArgs: '',
+    fuzzArgs: '',
+    inputType: 'stdin'
   }
   sourceFileList.value = []
   sourceUploadRef.value?.clearFiles()
@@ -525,6 +558,7 @@ const resetBlackboxForm = () => {
   blackboxForm.value = {
     taskName: '',
     inputType: 'stdin',
+    fuzzArgs: '',
     dependencies: ''
   }
   elfFileList.value = []
